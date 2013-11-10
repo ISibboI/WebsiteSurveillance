@@ -24,6 +24,7 @@ public class WebsiteSurveillance {
 	private static final String URL_PROPERTY_PREFIX = "url_";
 	private static final String SITES_LIST_PROPERTY = "sites";
 	private static final String DEBUG_FLAG = "debug";
+	private static final String CONFIG_DIR = ".websitechangetracker";
 
 	public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
 		Properties p = new Properties();
@@ -123,7 +124,7 @@ public class WebsiteSurveillance {
 			error("No user home directory found.");
 		}
 
-		File configDir = new File(home, ".websitechangetracker");
+		File configDir = new File(home, CONFIG_DIR);
 
 		if (configDir.exists() && !configDir.isDirectory()) {
 			error(configDir.getAbsolutePath() + " already exists, but is not a file");
