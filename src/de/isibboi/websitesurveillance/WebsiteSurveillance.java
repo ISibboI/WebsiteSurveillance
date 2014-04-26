@@ -59,9 +59,14 @@ public class WebsiteSurveillance {
 				String newHash = getHash(url);
 
 				if (p.getProperty(HASH_PROPERTY_PREFIX + name) == null) {
+					// Site was added
 					added.add(name);
 					p.setProperty(HASH_PROPERTY_PREFIX + name, "" + newHash);
 					p.setProperty(DOWN_PROPERTY_PREFIX + name, "false");
+					
+					if (newHash == null) {
+						down.add(name);
+					}
 				} else {
 					if (newHash == null) {
 						if ("false".equals(p.getProperty(DOWN_PROPERTY_PREFIX + name))) {
