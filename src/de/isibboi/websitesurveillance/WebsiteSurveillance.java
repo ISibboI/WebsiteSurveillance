@@ -96,6 +96,14 @@ public class WebsiteSurveillance {
 		if (changed.size() > 0) {
 			warn("Websites changed: " + listToString(changed));
 		}
+		
+		if (up.size() > 0) {
+			info("Websites up again: " + listToString(up));
+		}
+		
+		if (down.size() > 0) {
+			warn("Websites down: " + listToString(down));
+		}
 	}
 
 	private static String listToString(List<String> list) {
