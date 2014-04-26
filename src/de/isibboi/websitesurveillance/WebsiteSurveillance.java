@@ -22,6 +22,7 @@ import javax.xml.bind.DatatypeConverter;
 public class WebsiteSurveillance {
 	private static final String HASH_PROPERTY_PREFIX = "hash_";
 	private static final String URL_PROPERTY_PREFIX = "url_";
+	private static final String DOWN_PROPERTY_PREFIX = "down_";
 	private static final String SITES_LIST_PROPERTY = "sites";
 	private static final String DEBUG_FLAG = "debug";
 	private static final String CONFIG_DIR = ".websitechangetracker";
@@ -37,7 +38,7 @@ public class WebsiteSurveillance {
 			p.setProperty(SITES_LIST_PROPERTY, "");
 			error("No sites specified!");
 		}
-		
+
 		if (p.getProperty(DEBUG_FLAG) != null) {
 			info("Debug flag set");
 		}
@@ -45,6 +46,8 @@ public class WebsiteSurveillance {
 		String[] names = p.getProperty(SITES_LIST_PROPERTY).split("\\s*,\\s*");
 		List<String> changed = new ArrayList<>();
 		List<String> added = new ArrayList<>();
+		List<String> down = new ArrayList<>();
+		List<String> up = new ArrayList<>();
 
 		for (String name : names) {
 			if (p.getProperty(URL_PROPERTY_PREFIX + name) == null) {
@@ -58,10 +61,23 @@ public class WebsiteSurveillance {
 				if (p.getProperty(HASH_PROPERTY_PREFIX + name) == null) {
 					added.add(name);
 					p.setProperty(HASH_PROPERTY_PREFIX + name, newHash);
+					p.setProperty(DOWN_PROPERTY_PREFIX + name, "false");
 				} else {
-					if (!newHash.equals(p.getProperty(HASH_PROPERTY_PREFIX + name))) {
-						changed.add(name);
-						p.setProperty(HASH_PROPERTY_PREFIX + name, newHash);
+					if (newHash == null) {
+						if ("false".equals(p.getProperty(DOWN_PROPERTY_PREFIX + name))) {
+							p.setProperty(DOWN_PROPERTY_PREFIX + name, "true");
+							down.add(name);
+						}
+					} else {
+						if ("true".equals(p.getProperty(DOWN_PROPERTY_PREFIX + name))) {
+							p.setProperty(DOWN_PROPERTY_PREFIX + name, "false");
+							up.add(name);
+						}
+
+						if (!newHash.equals(p.getProperty(HASH_PROPERTY_PREFIX + name))) {
+							changed.add(name);
+							p.setProperty(HASH_PROPERTY_PREFIX + name, newHash);
+						}
 					}
 				}
 			} catch (MalformedURLException e) {
@@ -97,24 +113,28 @@ public class WebsiteSurveillance {
 		return result.toString();
 	}
 
-	private static String getHash(URL url) throws IOException, NoSuchAlgorithmException {
+	private static String getHash(URL url) throws NoSuchAlgorithmException {
 		MessageDigest md5 = MessageDigest.getInstance("MD5");
-		InputStream in = url.openStream();
-		byte[] buffer = new byte[1024 * 64];
-		int length = 0;
 
-		while (true) {
-			length = in.read(buffer);
+		try (InputStream in = url.openStream()) {
+			byte[] buffer = new byte[1024 * 64];
+			int length = 0;
 
-			if (length == -1) {
-				break;
-			} else {
-				md5.update(buffer, 0, length);
+			while (true) {
+				length = in.read(buffer);
+
+				if (length == -1) {
+					break;
+				} else {
+					md5.update(buffer, 0, length);
+				}
 			}
-		}
 
-		byte[] digest = md5.digest();
-		return DatatypeConverter.printHexBinary(digest);
+			byte[] digest = md5.digest();
+			return DatatypeConverter.printHexBinary(digest);
+		} catch (IOException e) {
+			return null;
+		}
 	}
 
 	private static File getFile() throws IOException {
