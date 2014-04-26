@@ -60,7 +60,7 @@ public class WebsiteSurveillance {
 
 				if (p.getProperty(HASH_PROPERTY_PREFIX + name) == null) {
 					added.add(name);
-					p.setProperty(HASH_PROPERTY_PREFIX + name, newHash);
+					p.setProperty(HASH_PROPERTY_PREFIX + name, "" + newHash);
 					p.setProperty(DOWN_PROPERTY_PREFIX + name, "false");
 				} else {
 					if (newHash == null) {
