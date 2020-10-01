@@ -1,5 +1,5 @@
-WebsiteSurveillance
-===================
+Website Surveillance
+=====================
 
 A simple Program to check if a website has changed.
 
